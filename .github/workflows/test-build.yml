@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: '3.x'
       - name: Run tests
-        run: node --test core.test.cjs ui.test.cjs
+        run: node --test core.test.cjs refine.test.cjs ui.test.cjs
       - name: Verify downloadable HTML is reproducible
         run: |
           python3 build.py

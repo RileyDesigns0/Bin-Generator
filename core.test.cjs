@@ -4,12 +4,41 @@ const fs=require('node:fs');
 const Core=fs.existsSync(__dirname+'/core.js')?require('./core.js'):{};
 const ascii=s=>new TextEncoder().encode(s).buffer;
 const tri=(z=0)=>new Float32Array([-1,-1,z, 1,-1,z, 0,1,z]);
+test('smoothNormals blends curved shared vertices without changing positions',()=>{
+ const v=new Float32Array([0,0,0,1,0,0,0,1,0, 1,0,0,0,0,0,0,-1,.4]),copy=v.slice();
+ const n=Core.smoothNormals(v);assert.deepEqual(v,copy);assert.equal(n.length,v.length);
+ assert.ok(n[1]>0&&n[2]>0.9);assert.deepEqual([...n.slice(0,3)],[...n.slice(12,15)]);
+ for(let i=0;i<n.length;i+=3)assert.ok(Math.abs(Math.hypot(...n.slice(i,i+3))-1)<1e-6);
+});
+test('smoothNormals preserves hard edges and handles degenerate triangles',()=>{
+ const v=new Float32Array([0,0,0,1,0,0,0,1,0, 1,0,0,0,0,0,0,0,1]);const n=Core.smoothNormals(v);
+ assert.deepEqual([...n.slice(0,3)],[0,0,1]);assert.deepEqual([...n.slice(12,15)],[0,1,0]);
+ assert.ok([...Core.smoothNormals(new Float32Array(9))].every(Number.isFinite));
+ assert.throws(()=>Core.smoothNormals(v,-1));
+});
+test('transformNormals rotates normals without centering, grounding, scaling or mutation',()=>{
+ const n=new Float32Array([0,0,1,0,1,0,1,0,0]),copy=n.slice();
+ const out=Core.transformNormals(n,{rx:90,rz:90,scale:25.4});
+ for(let i=0;i<3;i++)assert.ok(Math.abs(out[i]-[1,0,0][i])<1e-6);
+ assert.deepEqual(n,copy);for(let i=0;i<9;i+=3)assert.ok(Math.abs(Math.hypot(...out.slice(i,i+3))-1)<1e-6);
+ assert.throws(()=>Core.transformNormals(n,{rx:NaN}));
+});
 test('transform rotates XYZ in degrees then scales, centers XY, grounds Z',()=>{
  const b=Core.bounds(Core.transform(new Float32Array([0,0,0, 2,0,0, 0,3,4]),{rx:90,ry:0,rz:90,scale:2}));
  for(let i=0;i<3;i++)assert.ok(Math.abs(b.size[i]-[8,4,6][i])<1e-5);
  assert.equal(b.min[2],0);assert.ok(Math.abs(b.min[0]+b.max[0])<1e-5);assert.ok(Math.abs(b.min[1]+b.max[1])<1e-5);
  assert.throws(()=>Core.transform(tri(),{scale:0}));
  assert.throws(()=>Core.bounds(new Float32Array([NaN])));
+});
+test('STEP worker preserves indexed CAD normals and applies selected quality with shared triangle limit',async()=>{
+ const vm=require('node:vm'),ui=fs.readFileSync(__dirname+'/ui.html','utf8'),code=ui.match(/\+`\\nlet stepKernel;([\s\S]*?)`;\n/)[1];
+ let received,reply;const mesh={index:{array:[0,1,2]},attributes:{position:{array:[0,0,0,1,0,0,0,1,0]},normal:{array:[0,0,1,0,.2,.98,.2,0,.98]}}};
+ const context={BinCore:Core,BinRefine:{},Uint8Array,Float32Array,atob:()=>'',postMessage:x=>reply=x,occtimportjs:async()=>({ReadStepFile:(data,options)=>{received=options;return {success:true,meshes:[mesh]}}})};
+ vm.createContext(context);vm.runInContext('let stepKernel;'+code,context);
+ await context.onmessage({data:{id:1,type:'step',data:new ArrayBuffer(0),wasm:'',options:{quality:'ultra'}}});
+ assert.equal(received.angularDeflection,.1);assert.equal(received.linearDeflection,.01);assert.deepEqual([...reply.out.normals],Array.from(new Float32Array(mesh.attributes.normal.array)));assert.equal(reply.out.positions.length,9);
+ mesh.index.array=new Uint32Array(350001*3);await context.onmessage({data:{id:2,type:'step',data:new ArrayBuffer(0),options:{quality:'standard'}}});assert.match(reply.error,/350000/);
+ assert.match(ui,/id="stepQuality"/);assert.match(ui,/Reimport.*quality/i);assert.match(ui,/id="smoothCavity"/);
 });
 const opts={width:20,depth:20,height:12,wall:1,floor:2,clearance:0,resolution:0.5,offsetX:0,offsetY:0};
 function sample(b,x,y){let i=Math.round((x+opts.width/2)/b.dx),j=Math.round((y+opts.depth/2)/b.dy);return b.heights[j*b.nx+i];}

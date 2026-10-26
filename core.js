@@ -22,6 +22,23 @@ function transform(v,options={}){
  for(let i=0;i<v.length;i+=3){let x=v[i],y=v[i+1]*Math.cos(a)-v[i+2]*Math.sin(a),z=v[i+1]*Math.sin(a)+v[i+2]*Math.cos(a);let xx=x*Math.cos(b)+z*Math.sin(b);z=-x*Math.sin(b)+z*Math.cos(b);x=xx;out[i]=(x*Math.cos(c)-y*Math.sin(c))*scale;out[i+1]=(x*Math.sin(c)+y*Math.cos(c))*scale;out[i+2]=z*scale;}
  const box=bounds(out),cx=(box.min[0]+box.max[0])/2,cy=(box.min[1]+box.max[1])/2;for(let i=0;i<out.length;i+=3){out[i]-=cx;out[i+1]-=cy;out[i+2]-=box.min[2];}return out;
 }
+function transformNormals(v,{rx=0,ry=0,rz=0}={}){
+ validate(v);if(![rx,ry,rz].every(Number.isFinite))throw Error('Invalid normal rotation');
+ const [a,b,c]=[rx,ry,rz].map(x=>x*Math.PI/180),out=new Float32Array(v.length);
+ for(let i=0;i<v.length;i+=3){const x=v[i],y=v[i+1]*Math.cos(a)-v[i+2]*Math.sin(a),z=v[i+1]*Math.sin(a)+v[i+2]*Math.cos(a),xx=x*Math.cos(b)+z*Math.sin(b),zz=-x*Math.sin(b)+z*Math.cos(b);out[i]=xx*Math.cos(c)-y*Math.sin(c);out[i+1]=xx*Math.sin(c)+y*Math.cos(c);out[i+2]=zz;}return out;
+}
+// Shading only: weld exact duplicate coordinates, never move or scale a vertex.
+function smoothNormals(v,creaseDegrees=45){
+ validate(v);if(!Number.isFinite(creaseDegrees)||creaseDegrees<0||creaseDegrees>180)throw Error('Invalid crease angle');
+ const faces=new Float32Array(v.length/3),groups=new Map(),keys=new Array(v.length/3),out=new Float32Array(v.length),threshold=Math.cos(creaseDegrees*Math.PI/180);
+ for(let i=0;i<v.length;i+=9){const ux=v[i+3]-v[i],uy=v[i+4]-v[i+1],uz=v[i+5]-v[i+2],vx=v[i+6]-v[i],vy=v[i+7]-v[i+1],vz=v[i+8]-v[i+2];const x=uy*vz-uz*vy,y=uz*vx-ux*vz,z=ux*vy-uy*vx,len=Math.hypot(x,y,z)||1,f=i/3;faces[f]=x/len;faces[f+1]=y/len;faces[f+2]=z/len;
+  for(let k=0;k<9;k+=3){const key=v[i+k]+','+v[i+k+1]+','+v[i+k+2];keys[(i+k)/3]=key;let g=groups.get(key);if(!g)groups.set(key,g=[]);if(g[g.length-1]!==f)g.push(f);}
+ }
+ for(let i=0;i<v.length;i+=3){const f=Math.floor(i/9)*3,nx=faces[f],ny=faces[f+1],nz=faces[f+2];let x=0,y=0,z=0;
+  for(const g of groups.get(keys[i/3]))if(nx*faces[g]+ny*faces[g+1]+nz*faces[g+2]>=threshold-1e-7){x+=faces[g];y+=faces[g+1];z+=faces[g+2];}
+  const len=Math.hypot(x,y,z)||1;out[i]=x/len;out[i+1]=y/len;out[i+2]=z/len;
+ }return out;
+}
 // Clip even degenerate projected triangles: vertical faces and slivers must survive.
 function clip(poly,axis,value,greater){const result=[];if(!poly.length)return result;let a=poly[poly.length-1],ain=greater?a[axis]>=value:a[axis]<=value;for(const b of poly){const bin=greater?b[axis]>=value:b[axis]<=value;if(ain!==bin){const t=(value-a[axis])/(b[axis]-a[axis]);result.push(a.map((x,k)=>x+(b[k]-x)*t));}if(bin)result.push(b);a=b;ain=bin;}return result;}
 function buildBin(v,options){
@@ -69,5 +86,5 @@ function demoModel(){
  while(ids.length>2){let found=false;for(let k=0;k<ids.length;k++){let a=ids[(k+ids.length-1)%ids.length],b=ids[k],c=ids[(k+1)%ids.length];if(cross(poly[a],poly[b],poly[c])<=0)continue;const inside=ids.some(i=>i!==a&&i!==b&&i!==c&&cross(poly[a],poly[b],poly[i])>=0&&cross(poly[b],poly[c],poly[i])>=0&&cross(poly[c],poly[a],poly[i])>=0);if(inside)continue;emit(p(a,-5),p(b,-5),p(c,-5));emit(p(a,5),p(c,5),p(b,5));ids.splice(k,1);found=true;break;}if(!found)throw Error('Demo triangulation');}
  for(let i=0;i<poly.length;i++){let j=(i+1)%poly.length;emit(p(i,-5),p(i,5),p(j,5));emit(p(i,-5),p(j,5),p(j,-5));}return new Float32Array(out);
 }
-return {parseSTL,bounds,transform,buildBin,binarySTL,demoModel};
+return {parseSTL,bounds,transform,transformNormals,smoothNormals,buildBin,binarySTL,demoModel};
 });

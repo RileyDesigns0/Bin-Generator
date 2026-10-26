@@ -13,6 +13,12 @@ The downloaded HTML is self-contained. Open it in a modern Chromium-based browse
 
 The cavity uses a conservative rasterized lower-envelope heightfield: it clears everything above the model's lowest surface at every XY position, eliminating upward insertion undercuts. Clearance is a Euclidean distance offset, **not scaling**. Output is an approximate closed triangle mesh, not an exact CAD Boolean or STEP solid. Fine details can be softened or overcut by grid sampling; the UI reports the approximation and limits. Inspect the STL in your slicer and test-fit before printing.
 
+## Smooth import and cavity transitions
+
+STEP imports preserve OpenCascade surface normals, with Standard/Fine/Ultra tessellation quality. Select quality before importing; reimport to change an existing STEP model. STL previews use crease-aware smooth normals without altering vertex positions. Sharp CAD edges remain sharp. This follows the supplied CAD-View reference's separation of tessellation and shading.
+
+The optional **Round cavity transitions** setting also changes the exported mesh: a downward-only smoothing pass removes additional material at transitions. It cannot fill the insertion cavity or create an undercut, and the protected wall band and minimum floor remain intact. It adds clearance and is not a dimensioned fillet or a substitute for a finer grid. Disable it when preserving the tighter unsmoothed cavity matters more.
+
 ## Source and development
 
 - `ui.html` — app shell and UI
@@ -26,7 +32,7 @@ Rebuild the downloadable file and run tests:
 
 ```sh
 python3 build.py
-node --test core.test.cjs ui.test.cjs
+node --test core.test.cjs refine.test.cjs ui.test.cjs
 ```
 
 The app runs locally in a browser; no web server or package installation is required to use the download. No organizer base/preset patterns or STEP export are included yet.

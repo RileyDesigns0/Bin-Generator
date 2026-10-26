@@ -4,7 +4,7 @@ p=Path(__file__).resolve().parent
 html=(p/'ui.html').read_text()
 def safe(s): return s.replace('</script', '<\\/script')
 libs='\n'.join('<script>'+safe((p/'vendor'/n).read_text())+'</script>' for n in ['three.min.js','OrbitControls.js'])
-core=(p/'core.js').read_text()
+core=(p/'core.js').read_text()+'\n'+(p/'refine.js').read_text()
 html=html.replace('<!-- BUNDLED_LIBRARIES -->',libs+'\n<script>'+safe(core)+'</script>')
 html=html.replace('/* CORE_SOURCE */',safe(core)).replace('/* STEP_SOURCE */',safe((p/'vendor/occt.js').read_text()))
 html=html.replace('WASM_BASE64',base64.b64encode((p/'vendor/occt.wasm').read_bytes()).decode())
