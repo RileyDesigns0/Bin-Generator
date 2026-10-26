@@ -1,0 +1,3 @@
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const fs=require('node:fs'),vm=require('node:vm');
+test('sphere fit respects portrait horizontal field of view and preserves zoom ratio',()=>{const ctx={};vm.runInNewContext(fs.existsSync('framing.js')?fs.readFileSync('framing.js','utf8'):'',ctx);assert.ok(ctx.BinFraming,'framing helper exists');const f=ctx.BinFraming.fitDistance;for(const aspect of [.15,.5,1,2,8]){const d=f(100,38,aspect),half=Math.min(38*Math.PI/360,Math.atan(Math.tan(38*Math.PI/360)*aspect));assert.ok(d*Math.sin(half)>=110-1e-8)}assert.equal(ctx.BinFraming.resizeDistance(300,100,200),600)});

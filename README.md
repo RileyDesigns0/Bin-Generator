@@ -17,9 +17,11 @@ The cavity uses a conservative rasterized lower-envelope heightfield: it clears 
 
 ## Workspace layout
 
-The app keeps a desktop-style two-column layout at every window width: controls on the left (240–334 px), with the 3D workspace always on the right (at least 300 px wide). Very narrow windows scroll horizontally instead of stacking the viewport above the controls.
+The window-bound CAD shell never stacks controls above the viewport and has no document horizontal scrolling. Desktop controls default to a 260–334 px clamp; drag the divider (or focus it and use arrow keys/Home/End) to resize. **☰ Controls** collapses them to maximize the right workspace. At 650 px and below, controls start closed and open as an overlay drawer over the full-width base workspace; click its shade or press Escape to close.
 
-The shell follows the dynamic viewport height, with a `100vh` fallback. In short windows, scroll inside the left sidebar to reach **Generate** and **Download**; the sidebar has a reserved, visible scrollbar and bottom padding. The document does not need to scroll vertically. The 3D view shrinks to leave room for its toolbar and status footer. Sliders, precise values, elevation and smoothing work the same at every size.
+The sidebar scrolls independently at a definite height, with sticky **Generate** and **Download** actions. Header, toolbar and status compact in narrow/short windows; **Status** expands the truncated message. The shell follows `100dvh` with a `100vh` fallback. Aspect-aware perspective framing uses the bounding sphere of the bin and imported model and the smaller horizontal/vertical half-FOV. Resize scales the current camera-to-target vector, preserving orbit direction, pan target and relative zoom without rebuilding geometry. Top/Perspective explicitly refit. Sliders, precision values, elevation, smoothing and gizmos are unchanged.
+
+Reference inspection: CAD-View's React `ciA` root uses a `relative h-full` shell, an `absolute inset-0` canvas and floating pointer-event panels; its tree switches between `left-16` and `left-72` using `treeCollapsed`. The toolbar measures overflow with ResizeObserver and switches comfortable/compact modes. Renderer resize measures the canvas parent, skips zero dimensions, calls `setSize(width,height,false)` and requests rendering. No app-level draggable split divider was found; Formnest adds one as a local usability feature rather than claiming it exists in the reference.
 
 ## Smooth import and cavity transitions
 

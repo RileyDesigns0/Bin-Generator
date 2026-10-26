@@ -4,7 +4,8 @@ p=Path(__file__).resolve().parent
 html=(p/'ui.html').read_text()
 def safe(s): return s.replace('</script', '<\\/script')
 libs='\n'.join('<script>'+safe((p/'vendor'/n).read_text())+'</script>' for n in ['three.min.js','OrbitControls.js','TransformControls.js'])
-libs+='\n<script>'+safe((p/'placement.js').read_text())+'</script>'
+for name in ['placement.js','framing.js']:
+ libs+='\n<script>'+safe((p/name).read_text())+'</script>'
 core=(p/'core.js').read_text()+'\n'+(p/'refine.js').read_text()
 html=html.replace('<!-- BUNDLED_LIBRARIES -->',libs+'\n<script>'+safe(core)+'</script>')
 html=html.replace('/* CORE_SOURCE */',safe(core)).replace('/* STEP_SOURCE */',safe((p/'vendor/occt.js').read_text()))

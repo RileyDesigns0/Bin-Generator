@@ -12,7 +12,11 @@ test('gizmo controls and standalone bundle include r128 transform dependency wit
 test('desktop shell keeps viewport right and sidebar independently scrollable at every size',()=>{
  const html=fs.readFileSync(__dirname+'/ui.html','utf8'),css=html.split('<style>')[1].split('</style>')[0];
  assert.doesNotMatch(css,/grid-row:1|main\{[^}]*grid-template-columns:1fr/,'never stack workspace above controls');
- assert.match(css,/main\{[^}]*grid-template-columns:clamp\(240px,30vw,334px\) minmax\(300px,1fr\)/);
+ assert.doesNotMatch(css,/min-width:540px|overflow-x:auto/);
+ assert.match(css,/grid-template-columns:var\(--sidebar-width[^;]*6px minmax\(0,1fr\)/);
+ assert.match(css,/@media\(max-width:650px\)/);
+ for(const id of ['controlsToggle','controlsPanel','sidebarDivider'])assert.ok(html.includes('id="'+id+'"'));
+ assert.match(css,/\.sidebar-actions\{[^}]*position:sticky/);
  assert.match(css,/body\{[^}]*height:100vh;[^}]*height:100dvh/);
  assert.match(css,/main\{[^}]*min-height:0/);
  assert.match(css,/aside\{[^}]*height:100%;[^}]*min-height:0;[^}]*overflow-y:scroll/);
@@ -20,6 +24,6 @@ test('desktop shell keeps viewport right and sidebar independently scrollable at
  assert.doesNotMatch(css,/@media\(max-height:600px\)|main\{[^}]*height:auto/);
  assert.match(css,/#viewport\{[^}]*min-height:0/);
  assert.match(css,/\.toolbar,footer\{flex-shrink:0\}/);
- assert.match(html,/<aside>[\s\S]*id="generate"[\s\S]*<\/aside>/);
+ assert.match(html,/<aside\b[^>]*>[\s\S]*id="generate"[\s\S]*<\/aside>/);
  assert.match(css,/#status[^}]*overflow-wrap:anywhere/);
 });
