@@ -6,9 +6,9 @@ The downloaded HTML is self-contained. Open it in a modern Chromium-based browse
 
 ## Use
 
-1. Set box width, depth, height, wall and floor in mm.
+1. Set box width, depth, height, wall and floor in mm using sliders or their synchronized precision inputs (0.01 mm steps). Envelope edits update the wire preview on the next animation frame and immediately disable stale exports, without retransforming the source mesh.
 2. Import STL/STL-like `.slt` or STEP/STP. STL units are selected separately; STEP units are converted to mm.
-3. Orient the model for vertical (+Z) insertion. Use **Move (G)** to drag along world X/Y, **Rotate (R)** for XYZ rotation, and hold **Shift** for 1 mm / 15° snapping. Numeric fields stay synchronized. Z stays grounded to floor + clearance after release.
+3. Orient the model for vertical (+Z) insertion. Use **Move (G)** along world X/Y/Z, **Rotate (R)** for XYZ rotation, and hold **Shift** for 1 mm / 15° snapping. Numeric fields stay synchronized. **Elevation · Z** is a nonnegative offset above floor + clearance (omitted `offsetZ` defaults to zero in the core API). Drag previews can go below baseline, but release clamps them; rotation retains the preview's lowest Z rather than re-grounding automatically. Generation rejects nonfinite/negative elevation and any elevated source plus upper clearance above the rim. **Center object** changes XY only; **Fit box** retains elevation and grows height to fit. Importing resets all offsets.
 4. Generate and inspect the cavity, then download the bin as binary STL (mm).
 
 Dragging locks camera orbit and immediately invalidates the old bin/export. The preview reuses its geometry buffers while dragging and rebuilds the canonical mesh/normals only once on release. Smoothing remains available and unchanged.

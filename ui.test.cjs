@@ -8,3 +8,5 @@ test('portable workspace has import, fit, orientation, generation and export con
  assert.ok(html.includes('pendingReject'),'worker failure must reject the active request');
 });
 test('gizmo controls and standalone bundle include r128 transform dependency without visible licensing panel',()=>{const html=fs.readFileSync(__dirname+'/ui.html','utf8'),build=fs.readFileSync(__dirname+'/build.py','utf8');for(const id of ['move','rotate'])assert.ok(html.includes('id="'+id+'"'));assert.ok(html.includes('THREE.TransformControls'));assert.ok(html.includes("'dragging-changed'"));assert.ok(build.includes('TransformControls.js'));assert.ok(!html.includes('Bundled: Three.js'));assert.ok(!build.includes("notices+'</aside>'"));});
+
+test('responsive shell permits shrinking, scrolling and wrapping without clipped labels',()=>{const html=fs.readFileSync('ui.html','utf8');assert.match(html,/min-height:0/);assert.match(html,/overflow-y:auto/);assert.match(html,/\.envelope-fields[^}]*grid-template-columns:1fr/);assert.match(html,/@media\(max-height:600px\)/);assert.match(html,/#status[^}]*overflow-wrap:anywhere/);});

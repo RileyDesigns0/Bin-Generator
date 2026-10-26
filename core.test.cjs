@@ -95,3 +95,10 @@ test('ASCII STL parses triangles and rejects malformed/nonfinite data',()=>{
  assert.throws(()=>Core.parseSTL(ascii('solid empty endsolid')));
  assert.throws(()=>Core.parseSTL(ascii('solid x vertex NaN 0 0 endsolid')));
 });
+
+test('elevation raises cavity depths without reducing the floor and validates elevated top',()=>{
+ const v=new Float32Array([...tri(0),...tri(5)]),base=Core.buildBin(v,opts),raised=Core.buildBin(v,{...opts,offsetZ:3});
+ assert.equal(sample(raised,0,0),sample(base,0,0)+3);
+ for(const offsetZ of [-1,NaN,Infinity,6])assert.throws(()=>Core.buildBin(v,{...opts,offsetZ}));
+ assert.doesNotThrow(()=>Core.buildBin(v,{...opts,offsetZ:5}));
+});

@@ -42,15 +42,15 @@ function smoothNormals(v,creaseDegrees=45){
 // Clip even degenerate projected triangles: vertical faces and slivers must survive.
 function clip(poly,axis,value,greater){const result=[];if(!poly.length)return result;let a=poly[poly.length-1],ain=greater?a[axis]>=value:a[axis]<=value;for(const b of poly){const bin=greater?b[axis]>=value:b[axis]<=value;if(ain!==bin){const t=(value-a[axis])/(b[axis]-a[axis]);result.push(a.map((x,k)=>x+(b[k]-x)*t));}if(bin)result.push(b);a=b;ain=bin;}return result;}
 function buildBin(v,options){
- const box=bounds(v);const {width,depth,height,wall,floor,clearance=0,resolution=1,offsetX=0,offsetY=0}=options||{};
- if(![width,depth,height,wall,floor,clearance,resolution,offsetX,offsetY].every(Number.isFinite)||width<=0||depth<=0||height<=0||wall<=0||floor<=0||clearance<0||resolution<=0||2*wall>=Math.min(width,depth)||floor>=height)throw Error('Invalid bin dimensions, wall, floor, clearance or resolution');
+ const box=bounds(v);const {width,depth,height,wall,floor,clearance=0,resolution=1,offsetX=0,offsetY=0,offsetZ=0}=options||{};
+ if(![width,depth,height,wall,floor,clearance,resolution,offsetX,offsetY,offsetZ].every(Number.isFinite)||width<=0||depth<=0||height<=0||wall<=0||floor<=0||offsetZ<0||clearance<0||resolution<=0||2*wall>=Math.min(width,depth)||floor>=height)throw Error('Invalid bin dimensions, wall, floor, clearance or resolution');
  if(box.min[0]+offsetX-clearance < -width/2+wall || box.max[0]+offsetX+clearance > width/2-wall || box.min[1]+offsetY-clearance < -depth/2+wall || box.max[1]+offsetY+clearance > depth/2-wall)throw Error('Source plus clearance does not fit inside walls');
- if(box.size[2]+floor+2*clearance>height)throw Error('Source plus clearance exceeds bin rim height');
+ if(box.size[2]+floor+2*clearance+offsetZ>height)throw Error('Source plus clearance exceeds bin rim height');
  const nx=Math.ceil(width/resolution)+1,ny=Math.ceil(depth/resolution)+1,dx=width/(nx-1),dy=depth/(ny-1);
  if(nx>MAX_AXIS||ny>MAX_AXIS||nx*ny>MAX_NODES)throw Error('Resolution too fine: maximum 320 nodes/axis and 75000 nodes');
  const cells=new Float64Array((nx-1)*(ny-1));cells.fill(Infinity);const heights=new Float64Array(nx*ny);heights.fill(height);let work=0,occupied=0;
  const X=i=>-width/2+i*dx,Y=j=>-depth/2+j*dy;
- for(let t=0;t<v.length;t+=9){const p=[];for(let k=0;k<9;k+=3)p.push([v[t+k]+offsetX,v[t+k+1]+offsetY,v[t+k+2]-box.min[2]+floor+clearance]);
+ for(let t=0;t<v.length;t+=9){const p=[];for(let k=0;k<9;k+=3)p.push([v[t+k]+offsetX,v[t+k+1]+offsetY,v[t+k+2]-box.min[2]+floor+clearance+offsetZ]);
   const ix0=Math.max(0,Math.floor((Math.min(...p.map(a=>a[0]))+width/2)/dx)-1),ix1=Math.min(nx-2,Math.floor((Math.max(...p.map(a=>a[0]))+width/2)/dx));
   const iy0=Math.max(0,Math.floor((Math.min(...p.map(a=>a[1]))+depth/2)/dy)-1),iy1=Math.min(ny-2,Math.floor((Math.max(...p.map(a=>a[1]))+depth/2)/dy));
   for(let j=iy0;j<=iy1;j++)for(let i=ix0;i<=ix1;i++){if(++work>12000000)throw Error('Raster work limit: simplify mesh or increase resolution');let q=clip(p,0,X(i),true);q=clip(q,0,X(i+1),false);q=clip(q,1,Y(j),true);q=clip(q,1,Y(j+1),false);if(q.length){const n=j*(nx-1)+i;cells[n]=Math.min(cells[n],...q.map(a=>a[2]));}}
