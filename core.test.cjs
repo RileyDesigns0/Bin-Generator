@@ -31,10 +31,10 @@ test('transform rotates XYZ in degrees then scales, centers XY, grounds Z',()=>{
  assert.throws(()=>Core.bounds(new Float32Array([NaN])));
 });
 test('STEP worker preserves indexed CAD normals and applies selected quality with shared triangle limit',async()=>{
- const vm=require('node:vm'),ui=fs.readFileSync(__dirname+'/ui.html','utf8'),code=ui.match(/\+`\\nlet stepKernel;([\s\S]*?)`;\n/)[1];
+ const vm=require('node:vm'),ui=fs.readFileSync(__dirname+'/ui.html','utf8'),code=ui.match(/\+`\\n(let stepKernel[^;]*;[\s\S]*?)`;\n/)[1];
  let received,reply;const mesh={index:{array:[0,1,2]},attributes:{position:{array:[0,0,0,1,0,0,0,1,0]},normal:{array:[0,0,1,0,.2,.98,.2,0,.98]}}};
  const context={BinCore:Core,BinRefine:{},Uint8Array,Float32Array,atob:()=>'',postMessage:x=>reply=x,occtimportjs:async()=>({ReadStepFile:(data,options)=>{received=options;return {success:true,meshes:[mesh]}}})};
- vm.createContext(context);vm.runInContext('let stepKernel;'+code,context);
+ vm.createContext(context);vm.runInContext(code,context);
  await context.onmessage({data:{id:1,type:'step',data:new ArrayBuffer(0),wasm:'',options:{quality:'ultra'}}});
  assert.equal(received.angularDeflection,.1);assert.equal(received.linearDeflection,.01);assert.deepEqual([...reply.out.normals],Array.from(new Float32Array(mesh.attributes.normal.array)));assert.equal(reply.out.positions.length,9);
  mesh.index.array=new Uint32Array(350001*3);await context.onmessage({data:{id:2,type:'step',data:new ArrayBuffer(0),options:{quality:'standard'}}});assert.match(reply.error,/350000/);

@@ -9,5 +9,5 @@ function unitsMultiBin(mm,axis,pitch,heightUnit){const p=pitch??(axis==='height'
 function snapGridfinity(o,pitch,heightUnit){return {width:xyGridfinity(unitsGridfinity(o.width,'width',pitch,heightUnit),pitch,heightUnit),depth:xyGridfinity(unitsGridfinity(o.depth,'depth',pitch,heightUnit),pitch,heightUnit),height:zGridfinity(unitsGridfinity(o.height,'height',pitch,heightUnit),pitch,heightUnit)}}
 function snapMultiBin(o,pitch,heightUnit){return {width:xyMultiBin(unitsMultiBin(o.width,'width',pitch,heightUnit),pitch,heightUnit),depth:xyMultiBin(unitsMultiBin(o.depth,'depth',pitch,heightUnit),pitch,heightUnit),height:zMultiBin(unitsMultiBin(o.height,'height',pitch,heightUnit),pitch,heightUnit)}}
 function snapCustom(o){return {width:o.width,depth:o.depth,height:o.height}}
-const api={Gridfinity,MultiBin,xyGridfinity,xyMultiBin,zGridfinity,zMultiBin,unitsGridfinity,unitsMultiBin,snapGridfinity,snapMultiBin,snapCustom};if(typeof module==='object'&&module.exports)module.exports=api;root.BinPresets=api;
+const api={xy:xyGridfinity,z:zGridfinity,units:unitsGridfinity,snap:snapGridfinity,Gridfinity,MultiBin,xyGridfinity,xyMultiBin,zGridfinity,zMultiBin,unitsGridfinity,unitsMultiBin,snapGridfinity,snapMultiBin,snapCustom};if(typeof module==='object'&&module.exports)module.exports=api;root.BinPresets=api;
 })(globalThis);
