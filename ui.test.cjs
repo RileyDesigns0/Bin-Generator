@@ -7,3 +7,4 @@ test('portable workspace has import, fit, orientation, generation and export con
  assert.ok(html.includes("document.querySelectorAll('aside input, aside select')"),'configuration must be disabled during async work');
  assert.ok(html.includes('pendingReject'),'worker failure must reject the active request');
 });
+test('gizmo controls and standalone bundle include r128 transform dependency without visible licensing panel',()=>{const html=fs.readFileSync(__dirname+'/ui.html','utf8'),build=fs.readFileSync(__dirname+'/build.py','utf8');for(const id of ['move','rotate'])assert.ok(html.includes('id="'+id+'"'));assert.ok(html.includes('THREE.TransformControls'));assert.ok(html.includes("'dragging-changed'"));assert.ok(build.includes('TransformControls.js'));assert.ok(!html.includes('Bundled: Three.js'));assert.ok(!build.includes("notices+'</aside>'"));});

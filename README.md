@@ -8,8 +8,10 @@ The downloaded HTML is self-contained. Open it in a modern Chromium-based browse
 
 1. Set box width, depth, height, wall and floor in mm.
 2. Import STL/STL-like `.slt` or STEP/STP. STL units are selected separately; STEP units are converted to mm.
-3. Orient the model for vertical (+Z) insertion. Adjust XY offset, clearance and sampling pitch.
+3. Orient the model for vertical (+Z) insertion. Use **Move (G)** to drag along world X/Y, **Rotate (R)** for XYZ rotation, and hold **Shift** for 1 mm / 15° snapping. Numeric fields stay synchronized. Z stays grounded to floor + clearance after release.
 4. Generate and inspect the cavity, then download the bin as binary STL (mm).
+
+Dragging locks camera orbit and immediately invalidates the old bin/export. The preview reuses its geometry buffers while dragging and rebuilds the canonical mesh/normals only once on release. Smoothing remains available and unchanged.
 
 The cavity uses a conservative rasterized lower-envelope heightfield: it clears everything above the model's lowest surface at every XY position, eliminating upward insertion undercuts. Clearance is a Euclidean distance offset, **not scaling**. Output is an approximate closed triangle mesh, not an exact CAD Boolean or STEP solid. Fine details can be softened or overcut by grid sampling; the UI reports the approximation and limits. Inspect the STL in your slicer and test-fit before printing.
 
@@ -32,7 +34,7 @@ Rebuild the downloadable file and run tests:
 
 ```sh
 python3 build.py
-node --test core.test.cjs refine.test.cjs ui.test.cjs
+node --test *.test.cjs
 ```
 
 The app runs locally in a browser; no web server or package installation is required to use the download. No organizer base/preset patterns or STEP export are included yet.
