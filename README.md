@@ -15,6 +15,12 @@ Dragging locks camera orbit and immediately invalidates the old bin/export. The 
 
 The cavity uses a conservative rasterized lower-envelope heightfield: it clears everything above the model's lowest surface at every XY position, eliminating upward insertion undercuts. Clearance is a Euclidean distance offset, **not scaling**. Output is an approximate closed triangle mesh, not an exact CAD Boolean or STEP solid. Fine details can be softened or overcut by grid sampling; the UI reports the approximation and limits. Inspect the STL in your slicer and test-fit before printing.
 
+## Workspace layout
+
+The app keeps a desktop-style two-column layout at every window width: controls on the left (240–334 px), with the 3D workspace always on the right (at least 300 px wide). Very narrow windows scroll horizontally instead of stacking the viewport above the controls.
+
+The shell follows the dynamic viewport height, with a `100vh` fallback. In short windows, scroll inside the left sidebar to reach **Generate** and **Download**; the sidebar has a reserved, visible scrollbar and bottom padding. The document does not need to scroll vertically. The 3D view shrinks to leave room for its toolbar and status footer. Sliders, precise values, elevation and smoothing work the same at every size.
+
 ## Smooth import and cavity transitions
 
 STEP imports preserve OpenCascade surface normals, with Standard/Fine/Ultra tessellation quality. Select quality before importing; reimport to change an existing STEP model. STL previews use crease-aware smooth normals without altering vertex positions. Sharp CAD edges remain sharp. This follows the supplied CAD-View reference's separation of tessellation and shading.
