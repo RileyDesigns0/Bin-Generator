@@ -1,6 +1,6 @@
 # Formnest — scan to insertion-safe bin
 
-**Download the ready-to-open app:** [Formnest.html](https://github.com/RileyDesigns0/Bin-Generator/raw/refs/heads/main/Formnest.html?download=1)
+**Download the ready-to-open app:** [Formnest.html](https://github.com/RileyDesigns0/Bin-Generator/releases/latest/download/Formnest.html)
 
 The downloaded HTML is self-contained. Open it in a modern Chromium-based browser (Chrome, Edge, Brave) with WebGL enabled. The STEP importer and WASM runtime are bundled; it does not upload scans or fetch libraries at runtime. The file is about 11 MB. The interactive 3D view needs WebGL; geometry parsing/building uses a worker.
 
